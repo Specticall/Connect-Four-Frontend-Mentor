@@ -1,0 +1,110 @@
+:root {
+  --clr-black: #000;
+  --clr-dark-purple: #5c2dd5;
+  --clr-purple: #7945ff;
+  --clr-red: #fd6687;
+  --clr-yellow: #ffce67;
+  --clr-white: #fff;
+  --fs-small: 1rem;
+  --fs-medium: 1.25rem;
+  --fs-large: 3.5rem;
+  --fw-medium: 500;
+  --fw-bold: 700;
+}
+
+* {
+  font: inherit;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Space Grotesk, sans-serif;
+}
+
+.board {
+  --width: clamp(20rem, 45vw, 40rem);
+  --padding: calc(var(--width) / 40);
+  --gap: calc(var(--width) / 40);
+  --cell-width: calc((var(--width)  - var(--padding) * 2 - var(--gap) * 6) / 7);
+  position: relative;
+}
+
+.board__black {
+  width: var(--width);
+}
+
+.board__white {
+  z-index: 2;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.board__content {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.board .cell {
+  --x: 0;
+  --y: 0;
+  --fall-time: 1s;
+  z-index: 1;
+  transition: transform var(--fall-time) cubic-bezier(.42, 0, 1, 1);
+  transform: translate(calc(var(--padding)  + var(--x) * (var(--cell-width)  + var(--gap))), calc(var(--padding)  + var(--y) * (var(--cell-width)  + var(--gap))));
+  width: var(--cell-width);
+  aspect-ratio: 1;
+  border-radius: 100%;
+  position: absolute;
+}
+
+.board .cell > img {
+  width: 100%;
+}
+
+.player__score {
+  background-color: var(--clr-white);
+  border: .2rem solid #000;
+  border-radius: 1.5rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem 1.8rem 1.25rem;
+  display: flex;
+  position: relative;
+  transform: translateY(-1.5rem);
+  box-shadow: 0 .6rem 0 0 #000;
+}
+
+.player__score p {
+  font-size: var(--fs-medium);
+  font-weight: var(--fw-bold);
+}
+
+.player__score h2 {
+  font-size: var(--fs-large);
+  font-weight: var(--fw-bold);
+}
+
+.player__icon {
+  position: absolute;
+  top: -2rem;
+}
+
+.background {
+  background: var(--clr-purple);
+  justify-content: center;
+  align-items: center;
+  gap: 5rem;
+  max-width: 1440px;
+  height: 100vh;
+  margin: 0 auto;
+  display: flex;
+}
+
+/*# sourceMappingURL=index.8d8029cf.css.map */

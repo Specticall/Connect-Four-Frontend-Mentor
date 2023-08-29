@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Connect Four</title>
+    <!-- === SCSS === -->
+    <link rel="stylesheet" href="sass/main.scss" />
+    <!-- === JS === -->
+    <script defer type="module" src="js/main.js"></script>
+    <!-- === FONT === -->
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- === BOXICON === -->
+  </head>
+  <body class="background">
+    <article class="player__score">
+      <img
+        src="images/player-one.svg"
+        alt="player 1 icon"
+        class="player__icon"
+      />
+      <p>PLAYER 1</p>
+      <h2 class="score" data-player="1">12</h2>
+    </article>
+    <main class="board">
+      <img
+        src="images/board-layer-black-large.svg"
+        alt="board shadow"
+        class="board__black"
+      />
+      <div class="board__content">
+        <div class="cell__hidden" data-coords="1,2"></div>
+      </div>
+      <img
+        src="images/board-layer-white-large.svg"
+        alt="board main"
+        class="board__white"
+      />
+    </main>
+    <article class="player__score">
+      <img
+        src="images/player-two.svg"
+        alt="player 2 icon"
+        class="player__icon"
+      />
+      <p>PLAYER 2</p>
+      <h2 class="score" data-player="2">23</h2>
+    </article>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+.background {
+  background: var(--clr-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5rem;
+  height: 100vh;
+
+  max-width: 1440px;
+  margin: 0 auto;
+}

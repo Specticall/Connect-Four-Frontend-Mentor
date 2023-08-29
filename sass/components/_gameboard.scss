@@ -1,0 +1,67 @@
+.board {
+  --width: clamp(20rem, 45vw, 40rem);
+  --padding: calc(var(--width) / 40);
+  --gap: calc(var(--width) / 40);
+  --cell-width: calc(
+    (var(--width) - var(--padding) * 2 - var(--gap) * 6) / 7
+  );
+
+  position: relative;
+
+  // Board sizing
+  &__black {
+    // CHANGE WITH CLAMP LATER
+    width: var(--width);
+  }
+
+  &__white {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    z-index: 2;
+  }
+
+  &__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    // background-color: rgba(255, 0, 0, 0.518);
+  }
+
+  .cell {
+    --x: 0;
+    --y: 0;
+
+    --fall-time: 1s;
+
+    position: absolute;
+    z-index: 1;
+
+    transition: transform var(--fall-time)
+      cubic-bezier(0.42, 0, 1, 1);
+
+    transform: translate(
+      calc(
+        var(--padding) + var(--x) *
+          (var(--cell-width) + var(--gap))
+      ),
+      calc(
+        var(--padding) + var(--y) *
+          (var(--cell-width) + var(--gap))
+      )
+    );
+
+    width: var(--cell-width);
+    aspect-ratio: 1;
+
+    border-radius: 100%;
+
+    & > img {
+      width: 100%;
+    }
+  }
+}

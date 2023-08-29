@@ -1,0 +1,22 @@
+{
+  "name": "connect-four",
+  "version": "1.0.0",
+  "description": "Connect Four Game",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "core-js": "^3.32.1",
+    "gh-pages": "^6.0.0",
+    "npm-sass": "^3.1.0",
+    "parcel": "^2.9.3",
+    "regenerator-runtime": "^0.14.0"
+  },
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.9.3"
+  }
+}
