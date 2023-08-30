@@ -1,0 +1,50 @@
+@keyframes dropCell {
+  from {
+    transform: translate(
+      calc(
+        var(--gb-padding) + var(--x) *
+          (var(--gb-cell-width) + var(--gb-gap))
+      ),
+      var(--gb-padding)
+    );
+  }
+  to {
+    transform: translate(
+      calc(
+        var(--gb-padding) + var(--x) *
+          (var(--gb-cell-width) + var(--gb-gap))
+      ),
+      calc(
+        var(--gb-padding) + var(--y) *
+          (var(--gb-cell-width) + var(--gb-gap))
+      )
+    );
+  }
+}
+
+@keyframes oscilate {
+  0% {
+    translate: 0% 0%;
+  }
+
+  50% {
+    translate: 0% 15%;
+  }
+
+  100% {
+    translate: 0% 0%;
+  }
+}
+
+@keyframes shrink {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0);
+  }
+}
+
+.oscilates {
+  animation: oscilate 1s infinite;
+}

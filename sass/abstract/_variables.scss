@@ -1,5 +1,7 @@
+//prettier-ignore
 :root {
   --clr-black: #000000;
+  --clr-very-dark-purple: #3c1995;
   --clr-dark-purple: #5c2dd5;
   --clr-purple: #7945ff;
   --clr-red: #fd6687;
@@ -7,9 +9,22 @@
   --clr-white: #ffffff;
 
   --fs-small: 1rem;
-  --fs-medium: 1.25rem;
-  --fs-large: 3.5rem;
+  --fs-medium: clamp(1rem, 3vw, 1.25rem);
+  --fs-large: clamp(2rem, 8vw, 3.5rem);
+  --fs-very-large: clamp(2.5rem, 10vw, 3.5rem);
 
   --fw-medium: 500;
   --fw-bold: 700;
+
+  // GameBoard (gb)
+  --gb-width: 40rem;
+  --gb-padding: calc(var(--gb-width) / 40);
+  --gb-gap: calc(var(--gb-width) / 40);
+  --gb-cell-width: calc(
+    (var(--gb-width) - var(--gb-padding) * 2 - var(--gb-gap) * 6) / 7
+  );
+
+  @include max-width(tablet) {
+    --gb-width: max(20rem, 80vw);
+  }
 }

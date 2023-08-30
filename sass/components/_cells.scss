@@ -1,0 +1,48 @@
+.cell {
+  --x: 0;
+  --y: 0;
+
+  --fall-time: 1s;
+
+  position: absolute;
+  z-index: 1;
+
+  // transition: transform var(--fall-time)
+  //   cubic-bezier(0.42, 0, 1, 1);
+
+  animation: dropCell var(--fall-time)
+    cubic-bezier(0.42, 0, 1, 1);
+
+  transition: 0.25s;
+
+  transform: translate(
+    calc(
+      var(--gb-padding) + var(--x) *
+        (var(--gb-cell-width) + var(--gb-gap))
+    ),
+    calc(
+      var(--gb-padding) + var(--y) *
+        (var(--gb-cell-width) + var(--gb-gap))
+    )
+  );
+
+  width: var(--gb-cell-width);
+  aspect-ratio: 1;
+
+  border-radius: 100%;
+
+  & > img {
+    width: 100%;
+  }
+}
+
+// HIDDEN CLICKABLE CELLS
+.cell__hidden {
+  width: var(--gb-cell-width);
+  aspect-ratio: 11/10;
+  background-color: transparent;
+  border-radius: 100%;
+  color: red;
+
+  cursor: pointer;
+}

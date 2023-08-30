@@ -1,17 +1,10 @@
 .board {
-  --width: clamp(20rem, 45vw, 40rem);
-  --padding: calc(var(--width) / 40);
-  --gap: calc(var(--width) / 40);
-  --cell-width: calc(
-    (var(--width) - var(--padding) * 2 - var(--gap) * 6) / 7
-  );
-
   position: relative;
 
   // Board sizing
   &__black {
     // CHANGE WITH CLAMP LATER
-    width: var(--width);
+    width: var(--gb-width);
   }
 
   &__white {
@@ -32,36 +25,66 @@
     // background-color: rgba(255, 0, 0, 0.518);
   }
 
-  .cell {
-    --x: 0;
-    --y: 0;
-
-    --fall-time: 1s;
-
+  &__input {
     position: absolute;
+    top: 0;
+    left: 0;
+
+    // background-color: lightblue;
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    column-gap: var(--gb-gap);
+    row-gap: calc(var(--gb-gap) * 1.5);
+
+    padding: var(--gb-padding) var(--gb-padding);
+    z-index: 3;
+  }
+}
+
+.current__player {
+  position: absolute;
+  z-index: 4;
+
+  width: 15rem;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -10%);
+
+  @include flex-center;
+  flex-direction: column;
+
+  & > img {
+    position: absolute;
+    width: 100%;
+  }
+
+  & > p {
+    position: relative;
     z-index: 1;
+    font-size: var(--fs-medium);
+    font-weight: var(--fw-bold);
+    color: var(--clr-white);
 
-    transition: transform var(--fall-time)
-      cubic-bezier(0.42, 0, 1, 1);
+    margin-top: 1rem;
+  }
 
-    transform: translate(
-      calc(
-        var(--padding) + var(--x) *
-          (var(--cell-width) + var(--gap))
-      ),
-      calc(
-        var(--padding) + var(--y) *
-          (var(--cell-width) + var(--gap))
-      )
-    );
+  & > h2 {
+    position: relative;
+    z-index: 1;
+    font-size: var(--fs-very-large);
+    font-weight: var(--fw-bold);
+    color: var(--clr-white);
+  }
 
-    width: var(--cell-width);
-    aspect-ratio: 1;
+  @include max-width(tablet) {
+    width: 40%;
+    bottom: -20%;
+  }
 
-    border-radius: 100%;
-
-    & > img {
-      width: 100%;
-    }
+  @include max-width(small-tablet) {
+    width: 50%;
+    bottom: -30%;
   }
 }

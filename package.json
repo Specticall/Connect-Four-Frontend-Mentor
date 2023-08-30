@@ -4,6 +4,8 @@
   "description": "Connect Four Game",
   "main": "index.js",
   "scripts": {
+    "cleanup": "rmdir /s .parcel-cache,dist ",
+    "cleanstart": "npm run cleanup && parcel index.html",
     "start": "parcel index.html",
     "build": "parcel build index.html"
   },

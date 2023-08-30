@@ -1,41 +1,64 @@
 import { logics } from "./logic";
-import redCell from "../images/counter-red-large.svg";
-import yellowCell from "../images/counter-yellow-large.svg";
+import { cellValue } from "./cells";
+import { game } from "./game";
+import { cell } from "./cells";
 
-const cell = {
-  player: "O",
-  coords: [2, 3],
-};
+// const cell = {
+//   player: 1,
+//   coords: [2, 3],
+// };
 
 class GameboardClass {
   #gameboardDOM = document.querySelector(".board__content");
-  //prettier-ignore
-  gameboard = [ [" ", " ", " ", " ", " ", " "], 
-                [" ", " ", " ", " ", " ", " "], 
-                [" ", "1", " ", " ", " ", " "], 
-                [" ", "1", " ", " ", " ", " "],
-                [" ", "1", " ", " ", " ", " "],
-                [" ", "1", " ", " ", " ", " "] ];
+  #gameboardInput = document.querySelector(".board__input");
+  #dropIndicator = document.querySelector(
+    ".drop-indicator"
+  );
+  gameboard;
+  // Used to stop inputs from happening whenever there is an animation.
+  #ongoingAnimation = false;
+
   constructor() {
-    this.dropCell(3, 1, 1);
     // this.init(6, 7);
+
+    // Event listener that registers input
+    this.#gameboardInput.addEventListener(
+      "click",
+      this.#clickCell.bind(this)
+    );
+
+    // //////// DEV CODE ///////////////
+    // this.dropCell(3, 1, 2);
+
+    ////////////////////////////////////
   }
 
-  // Automatically div elements that can be clicked.
-  init(width, height) {
-    for(let x = 0; x < width; x++) {
-      for(let y = 0; y < height; y++) {
+  // Initialize the board.
+  // Note that height and width SHOULD NOT BE CHANGED.
+  async init(height, width) {
+    await this.#clearBoard();
+    // Initialize empty gameboard
+    this.gameboard = [...Array(height)].map((el) =>
+      Array(width).fill(" ")
+    );
+
+    // Automatically div elements that can be clicked.
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
         const html = `
-        
-        `
+        <div class="cell__hidden" data-coords="${y},${x}"></div>
+        `;
+        this.#gameboardInput.insertAdjacentHTML(
+          "beforeend",
+          html
+        );
       }
     }
-  };
+  }
 
   get #height() {
     return this.gameboard.length;
   }
-  
 
   get #width() {
     return this.gameboard[0].length;
@@ -105,10 +128,12 @@ class GameboardClass {
     return result;
   }
 
-  // New Cells will always fill the bottom of the column first
-  dropCell(y, x, player) {
+  // NOTE : New Cells will always fill the bottom of the column first
+  async dropCell(y, x, player) {
+    this.#ongoingAnimation = true;
+
     // The i >= -1 is so that the loop will go from the height -> -1
-    // Whenever it hits -1 it means that there are no longer any available space on the column
+    // If it ever hits -1 it means that there are no longer any available space on the column
 
     // Checks for the highest available spot on the column
     for (let i = this.#height - 1; i >= -1; i--) {
@@ -123,10 +148,18 @@ class GameboardClass {
       break;
     }
 
-    this.gameboard[y][x] = player.toString();
-    console.log(y, x);
-    this.renderCell(y, x, player);
+    // Insert the player input into the object array
+    this.gameboard[y][x] = new cellValue(player, [y, x]);
+
+    // Waits for cell render animation to finish
+    await this.#renderCell(y, x, player);
+
+    // Checks if the recent move created a winning position
     this.#checkWin([y, x]);
+
+    game.switchTurns();
+
+    this.#ongoingAnimation = false;
   }
 
   //prettier-ignore
@@ -143,34 +176,65 @@ class GameboardClass {
       console.log(result);
   }
 
-  renderCell(y, x, player) {
-    const cellColor = player === 1 ? redCell : yellowCell;
-    const cellHtml = `
-    <div class="cell" data-coords="${y},${x}">
-      <img src=${cellColor} alt="cell"/>
-    </div>
-    `;
+  async #renderCell(y, x, player) {
+    return new Promise((resolve) => {
+      const cellColor =
+        player === 1 ? cell.redCell : cell.yellowCell;
+      const cellHtml = `
+      <div class="cell" data-coords="${y},${x}" data-x="${x}", data-y="${y}" data-player="${player}">
+        <img src=${cellColor} alt="cell"/>
+      </div>
+      `;
 
-    this.#gameboardDOM.insertAdjacentHTML(
-      "afterbegin",
-      cellHtml
-    );
+      this.#gameboardDOM.insertAdjacentHTML(
+        "afterbegin",
+        cellHtml
+      );
 
-    const newCell = document.querySelector(
-      `[data-coords="${y},${x}"]`
-    );
-    newCell.style.setProperty("--x", x);
-    newCell.style.setProperty(
-      "--fall-time",
-      `${logics.calcFallTime(y)}s`
-    );
+      const newCell = document.querySelector(
+        `[data-coords="${y},${x}"]`
+      );
 
-    // Animates the transition
-    requestAnimationFrame(() => {
       newCell.style.setProperty("--x", x);
       newCell.style.setProperty("--y", y);
+      newCell.style.setProperty(
+        "--fall-time",
+        `${logics.calcFallTime(y)}s`
+      );
+
+      newCell.addEventListener("animationend", resolve);
+    });
+  }
+
+  #clickCell(e) {
+    const cell = e.target.closest(".cell__hidden");
+
+    if (!cell) return;
+
+    if (this.#ongoingAnimation)
+      return console.log("ANIMATION STILL ONGOING");
+
+    const [y, x] = cell.dataset.coords
+      .split(",")
+      .map((el) => Number(el));
+
+    this.dropCell(y, x, game.player);
+  }
+
+  #clearBoard() {
+    return new Promise(async (resolve) => {
+      this.#gameboardInput.innerHTML = "";
+
+      [...this.#gameboardDOM.children].forEach((cell) => {
+        cell.style.opacity = "0";
+      });
+
+      await logics.wait(0.25);
+
+      this.#gameboardDOM.innerHTML = "";
+      resolve();
     });
   }
 }
 
-const gameboard = new GameboardClass();
+export const gameboard = new GameboardClass();

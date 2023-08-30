@@ -24,10 +24,73 @@
       font-size: var(--fs-large);
       font-weight: var(--fw-bold);
     }
+
+    @include max-width(desktop) {
+      flex-direction: row;
+      gap: 1rem;
+
+      &[data-player="2"] {
+        flex-direction: row-reverse;
+
+        img {
+          right: -1.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+
+      &[data-player="1"] {
+        flex-direction: row;
+
+        img {
+          left: -1.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+
+      padding-block: 1rem;
+      padding-inline: 0rem;
+    }
+
+    @include max-width(small-tablet) {
+      gap: 0rem;
+      padding-block: 1rem;
+
+      &[data-player="2"] {
+        flex-direction: column;
+      }
+
+      &[data-player="1"] {
+        flex-direction: column;
+      }
+    }
   }
 
   &__icon {
     position: absolute;
     top: -2rem;
+  }
+}
+
+.player__score-container {
+  position: absolute;
+  width: 180%;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1050px;
+
+  @include max-width(desktop) {
+    gap: 0;
+    position: static;
+
+    width: var(--gb-width);
+    margin-inline: auto;
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }

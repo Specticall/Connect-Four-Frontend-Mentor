@@ -1,0 +1,29 @@
+.navigation {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  place-items: center;
+
+  max-width: var(--gb-width);
+  margin: 0 auto;
+
+  button {
+    background-color: var(--clr-dark-purple);
+    color: var(--clr-white);
+    padding: 0.75rem 2rem;
+    border-radius: 5rem;
+    transition: 0.1s;
+
+    &:hover {
+      background-color: var(--clr-very-dark-purple);
+    }
+  }
+
+  .btn__menu {
+    justify-self: start;
+  }
+
+  .btn__restart {
+    justify-self: end;
+  }
+}

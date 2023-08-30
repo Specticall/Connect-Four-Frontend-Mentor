@@ -31,8 +31,13 @@ class Logic {
   }
 
   calcFallTime(y) {
-    console.log(Math.sqrt(2 * y));
     return Math.sqrt(2 * y) / 7;
+  }
+
+  wait(seconds) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, seconds * 1000);
+    });
   }
 }
 
