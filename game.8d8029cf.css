@@ -152,6 +152,7 @@
 * {
   font: inherit;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
   margin: 0;
   padding: 0;
 }
@@ -600,11 +601,9 @@ a {
 
 .backdrop__bottom {
   background-color: var(--clr-dark-purple);
+  color: #0000;
+  flex-grow: 1;
   width: 100%;
-  height: calc(100vh - 60rem);
-  transition: all .5s;
-  position: absolute;
-  bottom: 0;
 }
 
 .backdrop__bottom.yellow {
@@ -613,12 +612,6 @@ a {
 
 .backdrop__bottom.red {
   background-color: var(--clr-red);
-}
-
-@media (width <= 500px) {
-  .backdrop__bottom {
-    height: calc(100vh - 45rem);
-  }
 }
 
 .pause {
@@ -821,6 +814,12 @@ a {
 
 .hidden {
   opacity: 0;
+}
+
+.game {
+  flex-direction: column;
+  height: 100%;
+  display: flex;
 }
 
 .main {

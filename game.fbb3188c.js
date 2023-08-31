@@ -574,7 +574,8 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"bDbGG":[function(require,module,exports) {
-var _webImmediateJs = require("core-js/modules/web.immediate.js"); // if (module.hot) module.hot.accept();
+var _webImmediateJs = require("core-js/modules/web.immediate.js"); // import "./ai.js";
+ // if (module.hot) module.hot.accept();
  /*
 TODO :
 */ 
@@ -725,6 +726,7 @@ class GameboardClass {
         });
     }
     ////////////////////////////////////
+    // ONLY FOR DEV PURPOSES
     get #height() {
         return this.gameboard.length;
     }
@@ -900,6 +902,38 @@ class GameboardClass {
         this.#showWin();
         return true;
     }
+    // USED BY CPU AI (get col, row, diag, in 1 function)
+    pulse(y, x) {
+        return {
+            row: this.#rowOf(y, x),
+            col: this.#columnOf(y, x),
+            diagonalRight: this.diagonalRight(y, x),
+            digonalLeft: this.#diagonalLeftOf(y, x)
+        };
+    }
+    printGame(board) {
+        const newboard = board.map((el, y)=>el.map((el, x)=>{
+                if (el === " ") return " ";
+                else return new (0, _images.cellValue)(+el, [
+                    y,
+                    x
+                ]);
+            }));
+        newboard.forEach((current)=>{
+            current.forEach((el)=>{
+                if (el === " ") return;
+                const { player, coords } = el;
+                const [y, x] = coords;
+                this.dropCell(y, x, player);
+            });
+        });
+    }
+    get height() {
+        return this.#height;
+    }
+    get width() {
+        return this.#width;
+    }
 }
 const gameboard = new GameboardClass();
 
@@ -1047,7 +1081,7 @@ class GameClass {
     #player1PointDOM = document.querySelector(".score[data-player='1']");
     #player2PointDOM = document.querySelector(".score[data-player='2']");
     #playerWinScreen = document.querySelector(".player__winner");
-    #restartBtn = document.querySelector(".btn__restart");
+    #restartBtn = document.querySelectorAll(".btn__restart");
     #playAgainBtn = document.querySelector(".btn__again");
     // Player state
     #currentPlayer = 1;
@@ -1058,7 +1092,7 @@ class GameClass {
     #pointPlayer1 = 0;
     #pointPlayer2 = 0;
     constructor(){
-        this.#restartBtn.addEventListener("click", this.#resetGame.bind(this));
+        this.#restartBtn.forEach((el)=>el.addEventListener("click", this.#resetGame.bind(this)));
         this.#playAgainBtn.addEventListener("click", this.#restartGame.bind(this));
         // Start game after everything finishes loading.
         window.addEventListener("DOMContentLoaded", ()=>{
