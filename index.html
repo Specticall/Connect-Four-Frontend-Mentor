@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four</title>
+    <!-- === SCSS === -->
+    <link rel="stylesheet" href="/index.8d8029cf.css">
+    <!-- === JS === -->
+    <script defer="" src="/index.fbb3188c.js"></script>
+    <!-- === FONT === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- === BOXICON === -->
+  </head>
+  <body>
+    <nav class="navigation">
+      <button class="btn btn__menu">MENU</button>
+      <img src="/logo.b3ecd760.svg" alt="connect four logo" class="logo">
+      <button class="btn btn__restart">RESTART</button>
+    </nav>
+
+    <div class="background">
+      <div class="player__score-container">
+        <article class="player__score" data-player="1">
+          <img src="/player-one.964a45f5.svg" alt="player 1 icon" class="player__icon">
+          <p>PLAYER 1</p>
+          <h2 class="score" data-player="1">12</h2>
+        </article>
+        <article class="player__score" data-player="2">
+          <img src="/player-two.e29f2214.svg" alt="player 2 icon" class="player__icon">
+          <p>PLAYER 2</p>
+          <h2 class="score" data-player="2">23</h2>
+        </article>
+      </div>
+      <main class="board">
+        <img src="/marker-red.9e67b2d9.svg" class="drop-indicator oscilates hidden">
+        <img src="/board-layer-black-large.16ec0902.svg" alt="board shadow" class="board__black">
+        <div class="board__content">
+          <!-- <div class="cell cell__win" data-coords="5,0" data-x="0" data-y="5" data-player="2">
+            <img src="images/counter-yellow-large.svg" alt="cell"/>
+          </div> -->
+        </div>
+        <div class="board__input"></div>
+        <img src="/board-layer-white-large.147d7a98.svg" alt="board main" class="board__white">
+        <!-- === CURRENT PLAYER === -->
+        <div class="current__player">
+          <img src="/turn-background-red.5baf717f.svg" alt="current player" class="current__player--image">
+          <p class="current__player--indicator">
+            PLAYER 1's TURN
+          </p>
+          <h2 class="current__player--timer">10S</h2>
+        </div>
+        <!-- === PLAYER WINNER === -->
+        <article class="player__winner hidden oscilatesSlow">
+          <p>Player 1</p>
+          <h2>WINS</h2>
+          <button class="btn btn__again">PLAY AGAIN</button>
+        </article>
+      </main>
+    </div>
+    <div class="backdrop"></div>
+  </body>
+</html>
