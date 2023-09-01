@@ -844,8 +844,7 @@ class GameboardClass {
     }
     #clickCell(e) {
         const cell = e.target.closest(".cell__hidden");
-        if (!cell) return;
-        if (!this.#canInputCells) return;
+        if (!cell || !this.#canInputCells) return;
         const [y, x] = cell.dataset.coords.split(",").map((el)=>Number(el));
         this.dropCell(y, x, (0, _game.game).player);
     }
@@ -901,15 +900,6 @@ class GameboardClass {
         if (!this.gameboard.every((el)=>el.every((el)=>el !== " "))) return;
         this.#showWin();
         return true;
-    }
-    // USED BY CPU AI (get col, row, diag, in 1 function)
-    pulse(y, x) {
-        return {
-            row: this.#rowOf(y, x),
-            col: this.#columnOf(y, x),
-            diagonalRight: this.diagonalRight(y, x),
-            digonalLeft: this.#diagonalLeftOf(y, x)
-        };
     }
     printGame(board) {
         const newboard = board.map((el, y)=>el.map((el, x)=>{
@@ -1081,7 +1071,7 @@ class GameClass {
     #player1PointDOM = document.querySelector(".score[data-player='1']");
     #player2PointDOM = document.querySelector(".score[data-player='2']");
     #playerWinScreen = document.querySelector(".player__winner");
-    #restartBtn = document.querySelectorAll(".btn__restart");
+    #restartBtn = document.querySelector(".btn__restart[data-where='nav']");
     #playAgainBtn = document.querySelector(".btn__again");
     // Player state
     #currentPlayer = 1;
@@ -1092,7 +1082,7 @@ class GameClass {
     #pointPlayer1 = 0;
     #pointPlayer2 = 0;
     constructor(){
-        this.#restartBtn.forEach((el)=>el.addEventListener("click", this.#resetGame.bind(this)));
+        this.#restartBtn.addEventListener("click", this.#resetGame.bind(this));
         this.#playAgainBtn.addEventListener("click", this.#restartGame.bind(this));
         // Start game after everything finishes loading.
         window.addEventListener("DOMContentLoaded", ()=>{
@@ -1127,9 +1117,10 @@ class GameClass {
             // Updates the DOM timer with the object timer
             this.#playerTimer.textContent = `${this.#time}S`;
             // Stop timer if it hits 0
-            if (this.#time !== -1) return;
-            this.stopTimer();
-            this.switchTurns();
+            if (this.#time === -1) {
+                this.stopTimer();
+                this.switchTurns();
+            }
         }, 1000);
     }
     stopTimer() {
@@ -1137,9 +1128,9 @@ class GameClass {
     }
     #restartGame() {
         // Resets the timer to default position
+        this.stopTimer();
         this.#time = 30;
         this.#playerTimer.textContent = `${this.#time}S`;
-        this.stopTimer();
         // Initializes the game
         this.startGame();
         // Toggle from the botto win screen to the turn screen
@@ -1200,6 +1191,7 @@ class GameClass {
         this.#dropIndicator.style.setProperty("--x", x);
     }
     displayWinScreen(playerWinner = "tie") {
+        console.log(playerWinner);
         // switch from turn display to win display
         this.#playerTurnContainer.classList.add("hidden");
         this.#playerWinScreen.classList.remove("hidden");
@@ -1212,6 +1204,7 @@ class GameClass {
         this.#playerWinScreen.querySelector("p").textContent = `PLAYER ${playerWinner}`;
         this.#backdrop.classList.add(playerWinner === 1 ? "red" : "yellow");
         this.#backdropBottom.classList.add(playerWinner === 1 ? "red" : "yellow");
+        this.#playerWinScreen.querySelector("h2").textContent = "WINS";
         // Animate Player Icon Bouncing
         const icon = document.querySelector(`.player__score[data-player="${playerWinner}"] > .player__icon`);
         icon.classList.add("iconAnimate");
@@ -1241,7 +1234,7 @@ parcelHelpers.export(exports, "menuPause", ()=>menuPause);
 var _game = require("./game");
 class PauseClass {
     #btnContinue = document.querySelector(".btn__continue");
-    #btnRestart = document.querySelector(".btn__restart");
+    #btnRestart = document.querySelector(".btn__restart[data-where='pause-menu']");
     #btnMenu = document.querySelector(".btn__menu");
     #dropIndicator = document.querySelector(".drop-indicator");
     #pauseMenu = document.querySelector(".pause");
@@ -1249,7 +1242,7 @@ class PauseClass {
         this.#btnMenu.addEventListener("click", this.togglePauseMenu.bind(this));
         this.#pauseMenu.addEventListener("click", this.closePauseMenu.bind(this));
         this.#btnContinue.addEventListener("click", this.togglePauseMenu.bind(this));
-        this.#btnRestart.addEventListener("click", this.restartGame.bind(this));
+        this.#btnRestart.addEventListener("click", this.resetGame.bind(this));
     }
     togglePauseMenu() {
         this.#pauseMenu.classList.contains("pause-game") ? (0, _game.game).startTimer() : (0, _game.game).stopTimer();
@@ -1260,9 +1253,10 @@ class PauseClass {
         if (!e.target.classList.contains("pause")) return;
         this.togglePauseMenu();
     }
-    restartGame() {
+    resetGame() {
         (0, _game.game).reset();
-        this.togglePauseMenu();
+        this.#pauseMenu.classList.toggle("pause-game");
+        this.#dropIndicator.classList.toggle("oscilates");
     }
 }
 const menuPause = new PauseClass();
