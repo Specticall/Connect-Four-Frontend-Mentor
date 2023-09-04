@@ -574,8 +574,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"bDbGG":[function(require,module,exports) {
-var _webImmediateJs = require("core-js/modules/web.immediate.js"); // import "./ai.js";
- // if (module.hot) module.hot.accept();
+var _webImmediateJs = require("core-js/modules/web.immediate.js"); // if (module.hot) module.hot.accept();
  /*
 TODO :
 */ 
@@ -584,8 +583,9 @@ var _logicJs = require("./logic.js");
 var _gameboardJs = require("./gameboard.js");
 var _gameJs = require("./game.js");
 var _navigationJs = require("./navigation.js");
+var _aiJs = require("./ai.js");
 
-},{"core-js/modules/web.immediate.js":"49tUX","regenerator-runtime":"dXNgZ","./logic.js":"dZozM","./gameboard.js":"f6lhA","./game.js":"cMznl","./navigation.js":"bGbYY"}],"dZozM":[function(require,module,exports) {
+},{"core-js/modules/web.immediate.js":"49tUX","regenerator-runtime":"dXNgZ","./logic.js":"dZozM","./gameboard.js":"f6lhA","./game.js":"cMznl","./navigation.js":"bGbYY","./ai.js":"l8Mbd"}],"dZozM":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "logics", ()=>logics);
@@ -789,12 +789,15 @@ class GameboardClass {
     }
     ////////////////////////////////////
     // NOTE : New Cells will always fill the bottom of the column first
-    async dropCell(y, x, player) {
+    async dropCell(y, x, player, render = false) {
         this.#canInputCells = false;
         // The i >= -1 is so that the loop will go from the height -> -1
         // If it ever hits -1 it means that there are no longer any available space on the column
         // Checks for the highest available spot on the column
         for(let i = this.#height - 1; i >= -1; i--){
+            // This breaks the height check operation when we
+            // are trying to print manually
+            if (render) break;
             // Checks if the board is already filled to the top
             if (i === -1) {
                 this.#canInputCells = true;
@@ -901,6 +904,8 @@ class GameboardClass {
         this.#showWin();
         return true;
     }
+    ///////////////////// DEV ////////////////////
+    //(Used for development purposes only)
     printGame(board) {
         const newboard = board.map((el, y)=>el.map((el, x)=>{
                 if (el === " ") return " ";
@@ -914,7 +919,7 @@ class GameboardClass {
                 if (el === " ") return;
                 const { player, coords } = el;
                 const [y, x] = coords;
-                this.dropCell(y, x, player);
+                this.dropCell(y, x, player, true);
             });
         });
     }
@@ -1049,6 +1054,7 @@ module.exports = require("e3ddaa9774facd65").getBundleURL("1pq9E") + "board-laye
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "game", ()=>game);
+var _ai = require("./ai");
 var _gameboard = require("./gameboard");
 var _turnBackgroundRedSvg = require("../images/turn-background-red.svg");
 var _turnBackgroundRedSvgDefault = parcelHelpers.interopDefault(_turnBackgroundRedSvg);
@@ -1058,6 +1064,10 @@ var _markerRedSvg = require("../images/marker-red.svg");
 var _markerRedSvgDefault = parcelHelpers.interopDefault(_markerRedSvg);
 var _markerYellowSvg = require("../images/marker-yellow.svg");
 var _markerYellowSvgDefault = parcelHelpers.interopDefault(_markerYellowSvg);
+var _cpuSvg = require("../images/cpu.svg");
+var _cpuSvgDefault = parcelHelpers.interopDefault(_cpuSvg);
+var _playerTwoSvg = require("../images/player-two.svg");
+var _playerTwoSvgDefault = parcelHelpers.interopDefault(_playerTwoSvg);
 class GameClass {
     // At the start of the game, it is player 1's turn
     #boardInput = document.querySelector(".board__input");
@@ -1081,19 +1091,27 @@ class GameClass {
     // Points
     #pointPlayer1 = 0;
     #pointPlayer2 = 0;
+    // Game type
+    #gameType;
     constructor(){
         this.#restartBtn.addEventListener("click", this.#resetGame.bind(this));
         this.#playAgainBtn.addEventListener("click", this.#restartGame.bind(this));
         // Start game after everything finishes loading.
         window.addEventListener("DOMContentLoaded", ()=>{
+            this.loadGameType();
             this.startGame();
         });
+    }
+    loadGameType() {
+        this.#gameType = sessionStorage.getItem("selectedGame");
     }
     startGame() {
         // Clears the board
         (0, _gameboard.gameboard).init(6, 7);
         // Sets the timer
         this.#playerTimer.textContent = `${this.#time}S`;
+        // set current player to 1
+        this.#currentPlayer = 1;
         // Sets the timer
         this.startTimer();
         this.#setTurnIndicator();
@@ -1107,6 +1125,9 @@ class GameClass {
         // Sets the player score
         this.#player1PointDOM.textContent = this.#pointPlayer1;
         this.#player2PointDOM.textContent = this.#pointPlayer2;
+        // Change text & image for the second player in accordance to the selected mode (cpu / pvp)
+        document.querySelector("[data-player='2']").querySelector("p").textContent = this.#gameType === "vsCPU" ? "CPU" : "PLAYER 2";
+        document.querySelector("[data-player='2']").querySelector("img").src = this.#gameType === "vsCPU" ? (0, _cpuSvgDefault.default) : (0, _playerTwoSvgDefault.default);
         // Adds the move event listener (for top indicator)
         this.#boardInput.addEventListener("mousemove", this.#moveDropIndicator.bind(this));
     }
@@ -1167,6 +1188,11 @@ class GameClass {
         this.startTimer();
         // Display the current player
         this.#setTurnIndicator();
+        if (this.#currentPlayer === 2 && this.#gameType === "vsCPU") {
+            const { coords } = (0, _ai.cpu).getBestMove((0, _gameboard.gameboard).gameboard);
+            const [y, x] = coords;
+            (0, _gameboard.gameboard).dropCell(y, x, 2, true);
+        }
     }
     addPointToPlayer(player) {
         player === 1 ? this.#pointPlayer1++ : this.#pointPlayer2++;
@@ -1191,7 +1217,6 @@ class GameClass {
         this.#dropIndicator.style.setProperty("--x", x);
     }
     displayWinScreen(playerWinner = "tie") {
-        console.log(playerWinner);
         // switch from turn display to win display
         this.#playerTurnContainer.classList.add("hidden");
         this.#playerWinScreen.classList.remove("hidden");
@@ -1215,7 +1240,314 @@ class GameClass {
 }
 const game = new GameClass();
 
-},{"./gameboard":"f6lhA","../images/turn-background-red.svg":"9WewK","../images/turn-background-yellow.svg":"f2BuL","../images/marker-red.svg":"2abKV","../images/marker-yellow.svg":"4c9gt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9WewK":[function(require,module,exports) {
+},{"./ai":"l8Mbd","./gameboard":"f6lhA","../images/turn-background-red.svg":"9WewK","../images/turn-background-yellow.svg":"f2BuL","../images/marker-red.svg":"2abKV","../images/marker-yellow.svg":"4c9gt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../images/cpu.svg":"9gVDk","../images/player-two.svg":"bdYKJ"}],"l8Mbd":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "cpu", ()=>cpu);
+var _game = require("./game");
+var _gameboard = require("./gameboard");
+//prettier-ignore
+const board = [
+    [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+    ],
+    [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+    ],
+    [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+    ],
+    [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+    ],
+    [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+    ],
+    [
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+    ]
+];
+// const board = [
+//   [" ", " ", " ", " "," "," ", " "],
+//   [" ", "2", " ", "1","1"," ", " "],
+//   [" ", "1", "1", "2","1"," ", " "],
+//   [" ", "2", "2", "1","1"," ", " "],
+//   ["2", "1", "1", "2","2","2", "1"],
+//   ["2", "2", "1", "2","2","2", "1"],
+// ]
+// const board = [
+//   ["1", "2", "1", "2","1","2", "1"],
+//   ["2", "1", "2", "1","2","1", "2"],
+//   ["1", "2", "1", "2","1","2", "1"],
+//   ["2", "1", "2", "1","2","1", "2"],
+//   ["1", "2", "1", "2","1","2", "1"],
+//   ["2", "1", "2", "1","2","1", "2"],
+// ]
+// BUG : PAS LAGI WIN ANIMATION PENCET RESTART JADI RUSAK.
+// AI IS PLAYER 2 <=============
+class AIClass {
+    constructor(){
+        window.addEventListener("DOMContentLoaded", ()=>{
+        // setTimeout(() => {
+        //   gameboard.printGame(board);
+        //   console.log(this.getBestMove(gameboard.gameboard));
+        // }, 300);
+        });
+    //prettier-ignore
+    // console.log(
+    //   this.#offenseTwoAdjacent5([" ", " ", 2, 1, "@", " ", 2])
+    // );
+    }
+    // ENTRY POINT // API :
+    getBestMove(board) {
+        const movesPoints = this.#checkScore(this.#getPossibleMoves(board), board);
+        let bestMoves = [];
+        const randomInt = (min, max)=>Math.trunc(Math.random() * (max - min + 1) + min);
+        // const movesPoints = [
+        //   { coords: [1, 2], score: 0 },
+        //   { coords: [2, 2], score: 6 },
+        //   { coords: [3, 2], score: 5 },
+        //   { coords: [4, 2], score: 27 },
+        //   { coords: [5, 2], score: 27 },
+        //   { coords: [6, 2], score: 27 },
+        //   { coords: [7, 2], score: 0 },
+        // ];
+        movesPoints.sort((a, b)=>b.score - a.score);
+        for(let i = 0; i < movesPoints.length; i++){
+            if (movesPoints[i - 1] && movesPoints[i - 1].score === movesPoints[i].score || i === 0) bestMoves.push(movesPoints[i]);
+            else break;
+        }
+        return bestMoves[randomInt(0, bestMoves.length - 1)];
+    }
+    #getPossibleMoves(board) {
+        const moves = {};
+        for(let y = board.length - 1; y >= 0; y--){
+            for(let x = 0; x < board[0].length; x++)if (board[y][x] === " " && !moves[x]) moves[x] = [
+                y,
+                x
+            ];
+        }
+        return moves;
+    }
+    #checkScore(moves, board) {
+        const scores = [];
+        Object.values(moves).forEach((move)=>{
+            const [y, x] = move;
+            const orientations = this.pulse(y, x, board);
+            // console.log(orientations);
+            const score = orientations.reduce((score, orient)=>{
+                // Prioritize center
+                score += this.#defense50(orient) || this.#defenseThreeAdjacent25(orient) || this.#defenseTwoAdjacent2(orient);
+                score += this.#win(orient) || this.#offenseThreeAdjacent25(orient) || this.#offenseTwoAdjacent5(orient);
+                return score;
+            }, x === 3 ? 5 : 0);
+            // Initial score is 5 if it's from the center board.
+            // console.log([y, x], score);
+            // console.log("===========");
+            scores.push({
+                coords: move,
+                score
+            });
+        });
+        return scores;
+    }
+    // Most of these algos uses two pointer / sliding window technique.
+    // Defensive move (50 points) -> O, O, O, X
+    // returns 50 if valid, 0 if not.
+    #defense50(lines) {
+        const currentIndex = lines.indexOf("@");
+        let l, r, validLength = 1;
+        l = r = currentIndex;
+        while(lines[r]){
+            r++;
+            if (!lines[r] || lines[r] === " " || lines[r] === 2) break;
+            // console.log(lines[r]);
+            validLength++;
+        }
+        while(lines[l]){
+            l--;
+            if (!lines[l] || lines[l] === " " || lines[l] === 2) break;
+            // console.log(lines[l]);
+            validLength++;
+        }
+        return validLength === 4 ? 50 : 0;
+    }
+    // Win move (infinity points)
+    #win(lines) {
+        const currentIndex = lines.indexOf("@");
+        let l, r, validLength = 1;
+        l = r = currentIndex;
+        while(lines[r]){
+            r++;
+            if (!lines[r] || lines[r] === " " || lines[r] === 1) break;
+            // console.log(lines[r]);
+            validLength++;
+        }
+        while(lines[l]){
+            l--;
+            if (!lines[l] || lines[l] === " " || lines[l] === 1) break;
+            // console.log(lines[l]);
+            validLength++;
+        }
+        return validLength === 4 ? Infinity : 0;
+    }
+    //prettier-ignore
+    // Three adjacent (25 points) -> X, X, X, _
+    #offenseThreeAdjacent25(lines) {
+        const currentIndex = lines.indexOf("@");
+        let l, r, validLength = 1;
+        l = r = currentIndex;
+        while(lines[r]){
+            r++;
+            if (!lines[r] || lines[r] === " " || lines[r] === 1 || validLength > 3) break;
+            // console.log(lines[r]);
+            validLength++;
+        }
+        while(lines[l] && validLength < 3){
+            l--;
+            if (!lines[l] || lines[l] === " " || lines[l] === 1 || validLength > 3) break;
+            // console.log(lines[l]);
+            validLength++;
+        }
+        return validLength === 3 ? 25 : 0;
+    }
+    //prettier-ignore
+    #defenseThreeAdjacent25(lines) {
+        const currentIndex = lines.indexOf("@");
+        let l, r, validLength = 1;
+        l = r = currentIndex;
+        while(lines[r]){
+            r++;
+            if (!lines[r] || lines[r] === " " || lines[r] === 2 || validLength > 3) break;
+            // console.log(lines[r]);
+            validLength++;
+        }
+        while(lines[l] && validLength < 3){
+            l--;
+            if (!lines[l] || lines[l] === " " || lines[l] === 2 || validLength > 3) break;
+            // console.log(lines[l]);
+            validLength++;
+        }
+        return validLength === 3 ? 25 : 0;
+    }
+    // offense two adjacent (X,X)
+    #offenseTwoAdjacent5(lines) {
+        const currentIndex = lines.indexOf("@");
+        if (lines[currentIndex + 1] === 2 || lines[currentIndex - 1] === 2) return 5;
+        else return 0;
+    }
+    // defense two adjacent (X, O)
+    #defenseTwoAdjacent2(lines) {
+        const currentIndex = lines.indexOf("@");
+        if (lines[currentIndex + 1] === 1 || lines[currentIndex - 1] === 1) return 2;
+        else return 0;
+    }
+    // Two in  -> 5 points e.g. -> X,X,_,_ // X,_,X,_ // X,_,_,X
+    #twoInFour5(lines) {}
+    // (get col, row, diags, in 1 function)
+    pulse(y, x, board) {
+        // get row
+        const row = board[y].map((cell, i, row)=>i === x ? "@" : cell.player || " ");
+        // get col
+        const col = [
+            ...Array(board.length)
+        ].map((_, i)=>{
+            return i === y ? "@" : board[i][x].player || " ";
+        });
+        //prettier-ignore
+        const diagRight = [
+            ""
+        ].reduce((result)=>{
+            let _y = y, _x = x;
+            // Iterate until topleft -> input (unshift) into array
+            while(_x > 0 && _y > 0){
+                _y--;
+                _x--;
+                result.unshift(board[_y][_x].player || " ");
+            }
+            // Resets the position variables
+            _y = y;
+            _x = x;
+            // Iterate until bottomright ->  input (push) into array
+            while(_x < board[0].length - 1 && _y < board.length - 1){
+                _y++;
+                _x++;
+                result.push(board[_y][_x].player || " ");
+            }
+            return result;
+        }, [
+            "@"
+        ]);
+        const diagLeft = [
+            ""
+        ].reduce((result)=>{
+            let _y = y, _x = x;
+            // Iterate until top right
+            while(_x < board[0].length - 1 && _y > 0){
+                _y--;
+                _x++;
+                result.unshift(board[_y][_x].player || " ");
+            }
+            // Resets the position variables
+            _y = y;
+            _x = x;
+            // Iterate until bottom left
+            while(_x > 0 && _y < board.length - 1){
+                _y++;
+                _x--;
+                result.push(board[_y][_x].player || " ");
+            }
+            return result;
+        }, [
+            "@"
+        ]);
+        return [
+            row,
+            col,
+            diagRight,
+            diagLeft
+        ];
+    }
+}
+const cpu = new AIClass();
+
+},{"./game":"cMznl","./gameboard":"f6lhA","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9WewK":[function(require,module,exports) {
 module.exports = require("801f43f910993e0e").getBundleURL("1pq9E") + "turn-background-red.5baf717f.svg" + "?" + Date.now();
 
 },{"801f43f910993e0e":"lgJ39"}],"f2BuL":[function(require,module,exports) {
@@ -1227,7 +1559,13 @@ module.exports = require("4ce28751e3923d3d").getBundleURL("1pq9E") + "marker-red
 },{"4ce28751e3923d3d":"lgJ39"}],"4c9gt":[function(require,module,exports) {
 module.exports = require("414d0e33b69a62fb").getBundleURL("1pq9E") + "marker-yellow.7493b4d4.svg" + "?" + Date.now();
 
-},{"414d0e33b69a62fb":"lgJ39"}],"bGbYY":[function(require,module,exports) {
+},{"414d0e33b69a62fb":"lgJ39"}],"9gVDk":[function(require,module,exports) {
+module.exports = require("7fcc8c46f5ceddaf").getBundleURL("1pq9E") + "cpu.876e7281.svg" + "?" + Date.now();
+
+},{"7fcc8c46f5ceddaf":"lgJ39"}],"bdYKJ":[function(require,module,exports) {
+module.exports = require("3f11b42b8f80cbb9").getBundleURL("1pq9E") + "player-two.e29f2214.svg" + "?" + Date.now();
+
+},{"3f11b42b8f80cbb9":"lgJ39"}],"bGbYY":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "menuPause", ()=>menuPause);

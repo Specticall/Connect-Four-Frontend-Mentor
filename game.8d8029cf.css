@@ -266,6 +266,7 @@ a {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 9.75rem;
   padding: 2.5rem 1.8rem 1.25rem;
   display: flex;
   position: relative;
@@ -309,6 +310,10 @@ a {
     top: 50%;
     left: -1.5rem;
     transform: translateY(-50%);
+  }
+
+  .player__score {
+    width: initial;
   }
 }
 
@@ -604,6 +609,7 @@ a {
   color: #0000;
   flex-grow: 1;
   width: 100%;
+  transition: all .5s;
 }
 
 .backdrop__bottom.yellow {
