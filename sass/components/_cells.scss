@@ -1,6 +1,6 @@
 .cell {
-  --x: 0;
-  --y: 0;
+  --x: 6;
+  --y: 5;
 
   --fall-time: 1s;
 
@@ -26,6 +26,10 @@
     )
   );
 
+  @include max-width(phone) {
+    margin-left: -0.5px;
+  }
+
   width: var(--gb-cell-width);
   aspect-ratio: 1;
 
@@ -38,11 +42,40 @@
 
 // HIDDEN CLICKABLE CELLS
 .cell__hidden {
-  width: var(--gb-cell-width);
-  aspect-ratio: 11/10;
+  width: calc(var(--gb-cell-width) * 1.15);
+  height: calc(var(--gb-cell-width) * 1.2);
+  // aspect-ratio: 8.5/10;
   background-color: transparent;
-  border-radius: 100%;
+  opacity: 0.5;
+  // border-radius: 100%;
   color: red;
 
   cursor: pointer;
+}
+
+.cell__win {
+  &::after {
+    animation: appear 0.25s, flash 1s infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
+    border-radius: 100%;
+
+    border: calc(var(--gb-cell-width) * 0.15) solid
+      var(--clr-white);
+
+    content: "";
+    width: calc(var(--gb-cell-width) * 0.4);
+    aspect-ratio: 1;
+    background: transparent;
+
+    @include max-width(small-tablet) {
+      transform: translate(-50%, -60%);
+    }
+
+    @include max-width(phone) {
+      transform: translate(-50%, -65%);
+    }
+  }
 }

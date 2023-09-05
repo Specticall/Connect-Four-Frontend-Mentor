@@ -10,6 +10,8 @@
     border: 0.2rem solid black;
     box-shadow: 0 0.6rem 0 0rem black;
 
+    width: 9.75rem;
+
     @include flex-center;
     flex-direction: column;
 
@@ -53,9 +55,30 @@
       padding-inline: 0rem;
     }
 
+    @include max-width(desktop) {
+      & {
+        width: initial;
+      }
+    }
+
     @include max-width(small-tablet) {
       gap: 0rem;
       padding-block: 1rem;
+      line-height: 1.1;
+
+      &[data-player="2"] {
+        flex-direction: column;
+      }
+
+      &[data-player="1"] {
+        flex-direction: column;
+      }
+    }
+
+    @include max-width(phone) {
+      gap: 0rem;
+      padding-block: 0.75rem;
+      border-radius: 1rem;
 
       &[data-player="2"] {
         flex-direction: column;

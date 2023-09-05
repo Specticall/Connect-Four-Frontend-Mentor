@@ -2,16 +2,17 @@
   "name": "connect-four",
   "version": "1.0.0",
   "description": "Connect Four Game",
-  "main": "index.js",
   "scripts": {
     "cleanup": "rmdir /s .parcel-cache,dist ",
     "cleanstart": "npm run cleanup && parcel index.html",
-    "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "start": "parcel html/game.html html/menu.html",
+    "build": "parcel build html/*.html --public-url ./",
+    "publish": "gh-pages -d dist"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "boxicons": "^2.1.4",
     "core-js": "^3.32.1",
     "gh-pages": "^6.0.0",
     "npm-sass": "^3.1.0",

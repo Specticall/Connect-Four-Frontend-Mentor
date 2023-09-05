@@ -1,12 +1,7 @@
 import { logics } from "./logic";
-import { cellValue } from "./cells";
+import { cellValue, images } from "./images";
 import { game } from "./game";
-import { cell } from "./cells";
-
-// const cell = {
-//   player: 1,
-//   coords: [2, 3],
-// };
+import { images } from "./images";
 
 class GameboardClass {
   #gameboardDOM = document.querySelector(".board__content");
@@ -16,7 +11,7 @@ class GameboardClass {
   );
   gameboard;
   // Used to stop inputs from happening whenever there is an animation.
-  #ongoingAnimation = false;
+  #canInputCells = true;
 
   constructor() {
     // this.init(6, 7);
@@ -54,8 +49,29 @@ class GameboardClass {
         );
       }
     }
+
+    // Enables cell input
+    this.#canInputCells = true;
   }
 
+  #clearBoard() {
+    return new Promise(async (resolve) => {
+      this.#gameboardInput.innerHTML = "";
+
+      [...this.#gameboardDOM.children].forEach((cell) => {
+        cell.style.opacity = "0";
+      });
+
+      await logics.wait(0.25);
+
+      this.#gameboardDOM.innerHTML = "";
+      resolve();
+    });
+  }
+
+  ////////////////////////////////////
+
+  // ONLY FOR DEV PURPOSES
   get #height() {
     return this.gameboard.length;
   }
@@ -128,17 +144,25 @@ class GameboardClass {
     return result;
   }
 
+  ////////////////////////////////////
+
   // NOTE : New Cells will always fill the bottom of the column first
-  async dropCell(y, x, player) {
-    this.#ongoingAnimation = true;
+  async dropCell(y, x, player, render = false) {
+    this.#canInputCells = false;
 
     // The i >= -1 is so that the loop will go from the height -> -1
     // If it ever hits -1 it means that there are no longer any available space on the column
 
     // Checks for the highest available spot on the column
     for (let i = this.#height - 1; i >= -1; i--) {
+      // This breaks the height check operation when we
+      // are trying to print manually
+      if (render) break;
       // Checks if the board is already filled to the top
-      if (i === -1) return console.log("COLUMN IS FULL");
+      if (i === -1) {
+        this.#canInputCells = true;
+        return;
+      }
 
       // If current el on column is empty the continue
       if (this.gameboard[i][x] !== " ") continue;
@@ -155,31 +179,23 @@ class GameboardClass {
     await this.#renderCell(y, x, player);
 
     // Checks if the recent move created a winning position
-    this.#checkWin([y, x]);
+    // 0 -> Player // 1 -> Winning Cell Coords
+    const winner = this.#checkWin([y, x]);
 
-    game.switchTurns();
+    if (winner) {
+      this.#showWin(winner);
+    } else {
+      // Re-enable input
+      this.#canInputCells = true;
 
-    this.#ongoingAnimation = false;
-  }
-
-  //prettier-ignore
-  #checkWin(recentPlacement) {
-    const [y, x] = recentPlacement;
-
-    // Checks winning conditions.
-    const result = 
-      logics.containsWinningPosition(this.#rowOf(y, x)) ||
-      logics.containsWinningPosition(this.#columnOf(y, x)) ||
-      logics.containsWinningPosition(this.#diagonalRightOf(y, x)) ||
-      logics.containsWinningPosition(this.#diagonalLeftOf(y, x)) || 
-      false;
-      console.log(result);
+      game.switchTurns();
+    }
   }
 
   async #renderCell(y, x, player) {
     return new Promise((resolve) => {
       const cellColor =
-        player === 1 ? cell.redCell : cell.yellowCell;
+        player === 1 ? images.redCell : images.yellowCell;
       const cellHtml = `
       <div class="cell" data-coords="${y},${x}" data-x="${x}", data-y="${y}" data-player="${player}">
         <img src=${cellColor} alt="cell"/>
@@ -209,10 +225,7 @@ class GameboardClass {
   #clickCell(e) {
     const cell = e.target.closest(".cell__hidden");
 
-    if (!cell) return;
-
-    if (this.#ongoingAnimation)
-      return console.log("ANIMATION STILL ONGOING");
+    if (!cell || !this.#canInputCells) return;
 
     const [y, x] = cell.dataset.coords
       .split(",")
@@ -221,19 +234,117 @@ class GameboardClass {
     this.dropCell(y, x, game.player);
   }
 
-  #clearBoard() {
-    return new Promise(async (resolve) => {
-      this.#gameboardInput.innerHTML = "";
+  // ////////////////////////////////
 
-      [...this.#gameboardDOM.children].forEach((cell) => {
-        cell.style.opacity = "0";
-      });
+  //prettier-ignore
+  #checkWin(recentPlacement) {
+    const [y, x] = recentPlacement;
 
-      await logics.wait(0.25);
+    // Checks winning conditions.
+    const result = 
+      logics.containsWinningPosition(this.#rowOf(y, x)) ||
+      logics.containsWinningPosition(this.#columnOf(y, x)) ||
+      logics.containsWinningPosition(this.#diagonalRightOf(y, x)) ||
+      logics.containsWinningPosition(this.#diagonalLeftOf(y, x)) || 
+      false;
 
-      this.#gameboardDOM.innerHTML = "";
-      resolve();
+    const draw = this.#checkDraw();
+    if(draw) return
+
+    return result;
+  }
+
+  async #showWin(winner = "tie") {
+    // If the game results in a draw :
+    if (winner === "tie") {
+      game.displayWinScreen();
+      return;
+    }
+    // creates an array with the only the coordinates of the winning cells.
+    const winningCoords = winner.map((el) => el[1]);
+
+    // Hide dropIndicator
+    this.#dropIndicator.classList.add("hidden");
+
+    // Mark & animate the winning cells
+    await this.#markWinningCell(winningCoords);
+    await logics.wait(0.2);
+
+    // Add point
+    const playerWinner = winner[0][0];
+    game.addPointToPlayer(playerWinner);
+
+    // Stop timer
+    game.stopTimer();
+
+    game.displayWinScreen(playerWinner);
+  }
+
+  #markWinningCell(winner) {
+    return new Promise((resolve) => {
+      let i = winner.length - 1;
+      const addMarkings = setInterval(() => {
+        // get data
+        const [y, x] = winner[i];
+        const cell = document.querySelector(
+          `[data-coords="${y},${x}"]`
+        );
+
+        // add class
+        cell.classList.add("cell__win");
+
+        // decrement counter
+        i--;
+
+        // stopping condition
+        if (i >= 0) return;
+        clearInterval(addMarkings);
+        resolve();
+      }, 200);
     });
+  }
+
+  #checkDraw() {
+    if (
+      !this.gameboard.every((el) =>
+        el.every((el) => el !== " ")
+      )
+    )
+      return;
+    this.#showWin();
+    return true;
+  }
+
+  ///////////////////// DEV ////////////////////
+  //(Used for development purposes only)
+  printGame(board) {
+    const newboard = board.map((el, y) =>
+      el.map((el, x) => {
+        if (el === " ") {
+          return " ";
+        } else {
+          return new cellValue(+el, [y, x]);
+        }
+      })
+    );
+
+    newboard.forEach((current) => {
+      current.forEach((el) => {
+        if (el === " ") return;
+        const { player, coords } = el;
+        const [y, x] = coords;
+
+        this.dropCell(y, x, player, true);
+      });
+    });
+  }
+
+  get height() {
+    return this.#height;
+  }
+
+  get width() {
+    return this.#width;
   }
 }
 

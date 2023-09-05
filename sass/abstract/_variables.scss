@@ -8,8 +8,9 @@
   --clr-yellow: #ffce67;
   --clr-white: #ffffff;
 
-  --fs-small: 1rem;
+  --fs-small: clamp(.8rem, 2vw, 1rem);
   --fs-medium: clamp(1rem, 3vw, 1.25rem);
+  --fs-semi-large: clamp(1.25rem, 4vw, 1.5rem);
   --fs-large: clamp(2rem, 8vw, 3.5rem);
   --fs-very-large: clamp(2.5rem, 10vw, 3.5rem);
 
@@ -25,6 +26,6 @@
   );
 
   @include max-width(tablet) {
-    --gb-width: max(20rem, 80vw);
+    --gb-width: max(20rem, 85vw);
   }
 }

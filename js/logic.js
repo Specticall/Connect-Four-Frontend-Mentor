@@ -7,26 +7,33 @@ class Logic {
   // Uses sliding window technique
   containsWinningPosition(arr, length = 4) {
     // Cleans the array
-    const cleanedArr = arr.filter(
-      (element) => element !== " "
-    );
+    // const cleanedArr = arr.filter(
+    //   (element) => element !== " "
+    // );
     let result = [];
-    for (let r = 0, l = 0; r < cleanedArr.length; r++) {
-      if (r === 0) {
-        result.push([r, cleanedArr[r]]);
+    for (let r = 0, l = 0; r < arr.length; r++) {
+      if (result.length === length) break;
+
+      if (arr[r] === " ") {
+        result = [];
+        l = r;
         continue;
       }
 
-      if (cleanedArr[r - 1] === cleanedArr[r]) {
-        result.push([r, cleanedArr[r]]);
+      if (r === 0) {
+        result.push([arr[r].player, arr[r].coords]);
+        continue;
+      }
+
+      if (arr[r - 1].player === arr[r].player) {
+        result.push([arr[r].player, arr[r].coords]);
         continue;
       }
 
       result = [];
       l = r;
-      result.push([r, cleanedArr[r]]);
+      result.push([arr[r].player, arr[r].coords]);
     }
-    // console.log(result);
     return result.length === length ? result : false;
   }
 

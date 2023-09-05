@@ -1,0 +1,62 @@
+.main {
+  @include flex-center;
+  height: 100vh;
+  flex-direction: column;
+  width: 100%;
+  background-color: var(--clr-dark-purple);
+
+  &__container {
+    @include flex-center;
+    flex-direction: column;
+    gap: 2rem;
+
+    background-color: var(--clr-purple);
+    border: 3px solid var(--clr-black);
+    border-radius: 2rem;
+    box-shadow: 0 1.25rem 0 0 var(--clr-black);
+    padding: 3rem;
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 30rem;
+      height: 5rem;
+
+      border-radius: 1.25rem;
+      // box-shadow: 0 0.75rem 0 0 var(--clr-black);
+    }
+
+    @include max-width(tablet) {
+      width: 90%;
+      padding: 2rem;
+
+      button {
+        width: 100%;
+        border-radius: 1.25rem;
+        height: 4.5rem;
+      }
+    }
+
+    @include max-width(phone) {
+      width: 100%;
+      height: 100%;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+
+      gap: 1.5rem;
+      padding-inline: 1rem;
+    }
+  }
+
+  .logo {
+    margin-bottom: 2rem;
+  }
+}
+
+@include max-width(phone) {
+  .menu-icon {
+    width: max(20%, 4rem);
+  }
+}

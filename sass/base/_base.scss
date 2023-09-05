@@ -3,10 +3,26 @@
   padding: 0;
   font: inherit;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   font-family: "Space Grotesk", sans-serif;
   background: var(--clr-purple);
-  padding-block: 6rem;
+
+  position: relative;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  // overflow-y: hidden;
+}
+
+//
+
+a {
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
 }

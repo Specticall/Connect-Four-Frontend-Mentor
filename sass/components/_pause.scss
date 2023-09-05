@@ -1,0 +1,56 @@
+.pause {
+  background-color: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  z-index: 8;
+  visibility: hidden;
+  opacity: 0;
+
+  transition: 0.5s;
+  @include flex-center;
+
+  &__container {
+    @include flex-center;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    width: 35rem;
+
+    padding: 3rem;
+    border-radius: 1.5rem;
+
+    border: 3px solid var(--clr-black);
+    box-shadow: 0 1rem 0 0 var(--clr-black);
+
+    background-color: var(--clr-dark-purple);
+
+    @include max-width(tablet) {
+      width: 80%;
+    }
+
+    @include max-width(phone) {
+      padding: 2rem 2rem;
+      box-shadow: 0 0.75rem 0 0 var(--clr-black);
+    }
+
+    h2 {
+      font-size: var(--fs-large);
+      font-weight: var(--fw-bold);
+      color: var(--clr-white);
+    }
+
+    button {
+      width: 100%;
+
+      a {
+        justify-content: center !important;
+      }
+    }
+  }
+}
+
+.pause-game {
+  visibility: visible;
+  opacity: 1;
+}

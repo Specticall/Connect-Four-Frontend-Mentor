@@ -35,8 +35,8 @@
 
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    column-gap: var(--gb-gap);
-    row-gap: calc(var(--gb-gap) * 1.5);
+    // column-gap: var(--gb-gap);
+    // row-gap: calc(var(--gb-gap) * 1.5);
 
     padding: var(--gb-padding) var(--gb-padding);
     z-index: 3;
@@ -46,6 +46,8 @@
 .current__player {
   position: absolute;
   z-index: 4;
+
+  transition: 0.5s;
 
   width: 15rem;
   position: absolute;

@@ -1,0 +1,91 @@
+.rules {
+  @include flex-center;
+  height: 100vh;
+
+  &__body {
+    padding-block: 4rem;
+  }
+
+  &__container {
+    position: relative;
+    background: var(--clr-white);
+    display: inline-block;
+    max-width: 35rem;
+
+    padding: 3rem;
+    border-radius: 1rem;
+    border: 3px solid var(--clr-black);
+    box-shadow: 0 1rem 0 0 var(--clr-black);
+
+    @include max-width(small-tablet) {
+      padding-inline: 1.5rem;
+      margin-inline: 1rem;
+    }
+
+    h1 {
+      font-size: var(--fs-very-large);
+      font-weight: var(--fw-bold);
+      text-align: center;
+    }
+
+    h2 {
+      font-size: var(--fs-medium);
+      font-weight: var(--fw-bold);
+      color: var(--clr-purple);
+      margin-top: 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    p,
+    li {
+      font-size: var(--fs-small);
+      color: rgb(97, 97, 97);
+      margin-top: 1rem;
+      list-style: none;
+      line-height: 1.6;
+    }
+
+    li {
+      display: flex;
+      gap: 1rem;
+
+      span {
+        font-weight: var(--fw-bold);
+        color: var(--clr-black);
+      }
+    }
+  }
+
+  button.btn__back {
+    background-color: var(--clr-red);
+    aspect-ratio: 1;
+    width: fit-content;
+
+    position: absolute;
+    left: 50%;
+    bottom: -7%;
+    transform: translate(-50%, 0);
+
+    border-radius: 100%;
+
+    transition: 0.1s;
+
+    @include flex-center;
+
+    border: 3px solid var(--clr-black);
+    box-shadow: 0 0.5rem 0 0 var(--clr-black);
+
+    .bx-check {
+      padding: 0.5rem;
+
+      font-size: var(--fs-large);
+      color: var(--clr-white);
+    }
+
+    &:hover {
+      box-shadow: 0 0.5rem 0 0 var(--clr-very-dark-purple);
+      border: 3px solid var(--clr-very-dark-purple);
+      translate: 0 -5%;
+    }
+  }
+}

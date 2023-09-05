@@ -1,0 +1,53 @@
+.player__winner {
+  position: absolute;
+  background-color: var(--clr-white);
+  z-index: 5;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  // padding: 1.5rem 6rem;
+  width: clamp(15rem, 60%, 30rem);
+  padding-block: 1.5rem;
+
+  margin-bottom: -8.5rem;
+
+  border-radius: 1rem;
+  border: 0.2rem solid var(--clr-black);
+
+  box-shadow: 0 0.75rem 0 0rem var(--clr-black);
+
+  transition: 0.5s;
+
+  text-align: center;
+
+  p {
+    font-size: var(--fs-medium);
+    font-weight: var(--fw-bold);
+    color: var(--clr-black);
+  }
+
+  h2 {
+    font-size: var(--fs-very-large);
+    font-weight: var(--fw-bold);
+    color: var(--clr-black);
+    line-height: 1.1;
+  }
+
+  button {
+    background: var(--clr-dark-purple);
+    color: var(--clr-white);
+    padding: 0.5rem 1.5rem;
+    border-radius: 2rem;
+    margin-top: 0.25rem;
+    font-size: var(--fs-small);
+  }
+
+  @include max-width(phone) {
+    padding-block: 0.75rem;
+    margin-bottom: -6.5rem;
+
+    button {
+      padding: 0.5rem 1rem;
+    }
+  }
+}

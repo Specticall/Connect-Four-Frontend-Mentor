@@ -10,6 +10,10 @@
   padding-bottom: 15rem;
 
   position: relative;
+
+  @include max-width(small-tablet) {
+    gap: 2rem;
+  }
 }
 
 .drop-indicator {
@@ -23,12 +27,37 @@
 
   transform: translateX(
     calc(
-      var(--gb-padding) * 2.2 + var(--x) *
+      var(--gb-padding) * 2.3 + var(--x) *
         (var(--gb-cell-width) + var(--gb-gap))
     )
   );
+
+  @include max-width(tablet) {
+    width: 6%;
+
+    transform: translateX(
+      calc(
+        var(--gb-padding) * 2.2 + var(--x) *
+          (var(--gb-cell-width) + var(--gb-gap))
+      )
+    );
+  }
+
+  @include max-width(small-tablet) {
+    top: -2rem;
+  }
+
+  @include max-width(phone) {
+    width: 6.5%;
+  }
 }
 
 .hidden {
-  visibility: hidden;
+  opacity: 0;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }

@@ -1,0 +1,69 @@
+.backdrop {
+  position: absolute;
+  bottom: 0;
+  z-index: -1;
+
+  border-radius: 5rem 5rem 0 0;
+
+  width: 100%;
+  height: 18rem;
+
+  background-color: var(--clr-dark-purple);
+
+  transition: 0.5s;
+
+  display: flex;
+
+  &.yellow {
+    background-color: var(--clr-yellow);
+  }
+
+  &.red {
+    background-color: var(--clr-red);
+  }
+
+  @include max-width(small-tablet) {
+    border-radius: 2rem 2rem 0 0;
+    height: 17rem;
+  }
+
+  // &__bottom {
+  //   transition: 0.5s;
+
+  //   position: absolute;
+  //   background-color: var(--clr-dark-purple);
+  //   width: 100%;
+  //   height: calc(100vh - 60rem);
+  //   bottom: 0;
+  //   flex: 1;
+
+  //   &.yellow {
+  //     background-color: var(--clr-yellow);
+  //   }
+
+  //   &.red {
+  //     background-color: var(--clr-red);
+  //   }
+
+  //   @include max-width(phone) {
+  //     height: calc(100vh - 45rem);
+  //   }
+  // }
+}
+
+.backdrop__bottom {
+  background-color: var(--clr-dark-purple);
+  width: 100%;
+  flex-grow: 1;
+  color: transparent;
+
+  transition: 0.5s;
+
+  &.yellow {
+    background-color: var(--clr-yellow);
+  }
+
+  &.red {
+    background-color: var(--clr-red);
+  }
+}

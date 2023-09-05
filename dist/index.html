@@ -37,9 +37,14 @@
       <main class="board">
         <img src="/marker-red.9e67b2d9.svg" class="drop-indicator oscilates hidden">
         <img src="/board-layer-black-large.16ec0902.svg" alt="board shadow" class="board__black">
-        <div class="board__content"></div>
+        <div class="board__content">
+          <!-- <div class="cell cell__win" data-coords="5,0" data-x="0" data-y="5" data-player="2">
+            <img src="images/counter-yellow-large.svg" alt="cell"/>
+          </div> -->
+        </div>
         <div class="board__input"></div>
         <img src="/board-layer-white-large.147d7a98.svg" alt="board main" class="board__white">
+        <!-- === CURRENT PLAYER === -->
         <div class="current__player">
           <img src="/turn-background-red.5baf717f.svg" alt="current player" class="current__player--image">
           <p class="current__player--indicator">
@@ -47,7 +52,14 @@
           </p>
           <h2 class="current__player--timer">10S</h2>
         </div>
+        <!-- === PLAYER WINNER === -->
+        <article class="player__winner hidden oscilatesSlow">
+          <p>Player 1</p>
+          <h2>WINS</h2>
+          <button class="btn btn__again">PLAY AGAIN</button>
+        </article>
       </main>
     </div>
+    <div class="backdrop"></div>
   </body>
 </html>

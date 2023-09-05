@@ -574,7 +574,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"bDbGG":[function(require,module,exports) {
-var _webImmediateJs = require("core-js/modules/web.immediate.js");
+var _webImmediateJs = require("core-js/modules/web.immediate.js"); // if (module.hot) module.hot.accept();
 var _regeneratorRuntime = require("regenerator-runtime");
 var _logicJs = require("./logic.js");
 var _gameboardJs = require("./gameboard.js");
@@ -2421,31 +2421,38 @@ class Logic {
     // Uses sliding window technique
     containsWinningPosition(arr, length = 4) {
         // Cleans the array
-        const cleanedArr = arr.filter((element)=>element !== " ");
+        // const cleanedArr = arr.filter(
+        //   (element) => element !== " "
+        // );
         let result = [];
-        for(let r = 0, l = 0; r < cleanedArr.length; r++){
+        for(let r = 0, l = 0; r < arr.length; r++){
+            if (result.length === length) break;
+            if (arr[r] === " ") {
+                result = [];
+                l = r;
+                continue;
+            }
             if (r === 0) {
                 result.push([
-                    r,
-                    cleanedArr[r]
+                    arr[r].player,
+                    arr[r].coords
                 ]);
                 continue;
             }
-            if (cleanedArr[r - 1] === cleanedArr[r]) {
+            if (arr[r - 1].player === arr[r].player) {
                 result.push([
-                    r,
-                    cleanedArr[r]
+                    arr[r].player,
+                    arr[r].coords
                 ]);
                 continue;
             }
             result = [];
             l = r;
             result.push([
-                r,
-                cleanedArr[r]
+                arr[r].player,
+                arr[r].coords
             ]);
         }
-        // console.log(result);
         return result.length === length ? result : false;
     }
     calcFallTime(y) {
@@ -2494,19 +2501,15 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "gameboard", ()=>gameboard);
 var _logic = require("./logic");
-var _cells = require("./cells");
+var _images = require("./images");
 var _game = require("./game");
-// const cell = {
-//   player: 1,
-//   coords: [2, 3],
-// };
 class GameboardClass {
     #gameboardDOM = document.querySelector(".board__content");
     #gameboardInput = document.querySelector(".board__input");
     #dropIndicator = document.querySelector(".drop-indicator");
     gameboard;
     // Used to stop inputs from happening whenever there is an animation.
-    #ongoingAnimation = false;
+    #canInputCells = true;
     constructor(){
         // this.init(6, 7);
         // Event listener that registers input
@@ -2530,7 +2533,23 @@ class GameboardClass {
         `;
             this.#gameboardInput.insertAdjacentHTML("beforeend", html);
         }
+        // Enables cell input
+        this.#canInputCells = true;
     }
+    #clearBoard() {
+        return new Promise(async (resolve)=>{
+            this.#gameboardInput.innerHTML = "";
+            [
+                ...this.#gameboardDOM.children
+            ].forEach((cell)=>{
+                cell.style.opacity = "0";
+            });
+            await (0, _logic.logics).wait(0.25);
+            this.#gameboardDOM.innerHTML = "";
+            resolve();
+        });
+    }
+    ////////////////////////////////////
     get #height() {
         return this.gameboard.length;
     }
@@ -2591,15 +2610,19 @@ class GameboardClass {
         }
         return result;
     }
+    ////////////////////////////////////
     // NOTE : New Cells will always fill the bottom of the column first
     async dropCell(y, x, player) {
-        this.#ongoingAnimation = true;
+        this.#canInputCells = false;
         // The i >= -1 is so that the loop will go from the height -> -1
         // If it ever hits -1 it means that there are no longer any available space on the column
         // Checks for the highest available spot on the column
         for(let i = this.#height - 1; i >= -1; i--){
             // Checks if the board is already filled to the top
-            if (i === -1) return console.log("COLUMN IS FULL");
+            if (i === -1) {
+                this.#canInputCells = true;
+                return console.log("COLUMN IS FULL");
+            }
             // If current el on column is empty the continue
             if (this.gameboard[i][x] !== " ") continue;
             // If current el IS NOT empty then set it to the y position
@@ -2607,30 +2630,28 @@ class GameboardClass {
             break;
         }
         // Insert the player input into the object array
-        this.gameboard[y][x] = new (0, _cells.cellValue)(player, [
+        this.gameboard[y][x] = new (0, _images.cellValue)(player, [
             y,
             x
         ]);
         // Waits for cell render animation to finish
         await this.#renderCell(y, x, player);
         // Checks if the recent move created a winning position
-        this.#checkWin([
+        // 0 -> Player // 1 -> Winning Cell Coords
+        const winner = this.#checkWin([
             y,
             x
         ]);
-        (0, _game.game).switchTurns();
-        this.#ongoingAnimation = false;
-    }
-    //prettier-ignore
-    #checkWin(recentPlacement) {
-        const [y, x] = recentPlacement;
-        // Checks winning conditions.
-        const result = (0, _logic.logics).containsWinningPosition(this.#rowOf(y, x)) || (0, _logic.logics).containsWinningPosition(this.#columnOf(y, x)) || (0, _logic.logics).containsWinningPosition(this.#diagonalRightOf(y, x)) || (0, _logic.logics).containsWinningPosition(this.#diagonalLeftOf(y, x)) || false;
-        console.log(result);
+        if (winner) this.#showWin(winner);
+        else {
+            // Re-enable input
+            this.#canInputCells = true;
+            (0, _game.game).switchTurns();
+        }
     }
     async #renderCell(y, x, player) {
         return new Promise((resolve)=>{
-            const cellColor = player === 1 ? (0, _cells.cell).redCell : (0, _cells.cell).yellowCell;
+            const cellColor = player === 1 ? (0, _images.images).redCell : (0, _images.images).yellowCell;
             const cellHtml = `
       <div class="cell" data-coords="${y},${x}" data-x="${x}", data-y="${y}" data-player="${player}">
         <img src=${cellColor} alt="cell"/>
@@ -2647,27 +2668,55 @@ class GameboardClass {
     #clickCell(e) {
         const cell = e.target.closest(".cell__hidden");
         if (!cell) return;
-        if (this.#ongoingAnimation) return console.log("ANIMATION STILL ONGOING");
+        if (!this.#canInputCells) return;
         const [y, x] = cell.dataset.coords.split(",").map((el)=>Number(el));
         this.dropCell(y, x, (0, _game.game).player);
     }
-    #clearBoard() {
-        return new Promise(async (resolve)=>{
-            this.#gameboardInput.innerHTML = "";
-            [
-                ...this.#gameboardDOM.children
-            ].forEach((cell)=>{
-                cell.style.opacity = "0";
-            });
-            await (0, _logic.logics).wait(0.25);
-            this.#gameboardDOM.innerHTML = "";
-            resolve();
+    // ////////////////////////////////
+    //prettier-ignore
+    #checkWin(recentPlacement) {
+        const [y, x] = recentPlacement;
+        // Checks winning conditions.
+        const result = (0, _logic.logics).containsWinningPosition(this.#rowOf(y, x)) || (0, _logic.logics).containsWinningPosition(this.#columnOf(y, x)) || (0, _logic.logics).containsWinningPosition(this.#diagonalRightOf(y, x)) || (0, _logic.logics).containsWinningPosition(this.#diagonalLeftOf(y, x)) || false;
+        return result;
+    }
+    async #showWin(winner) {
+        // creates an array with the only the coordinates of the winning cells.
+        const winningCoords = winner.map((el)=>el[1]);
+        // Hide dropIndicator
+        this.#dropIndicator.classList.add("hidden");
+        // Mark & animate the winning cells
+        await this.#markWinningCell(winningCoords);
+        await (0, _logic.logics).wait(0.2);
+        // Add point
+        const playerWinner = winner[0][0];
+        (0, _game.game).addPointToPlayer(playerWinner);
+        // Stop timer
+        (0, _game.game).stopTimer();
+        (0, _game.game).displayWinScreen(playerWinner);
+    }
+    #markWinningCell(winner) {
+        return new Promise((resolve)=>{
+            let i = winner.length - 1;
+            const addMarkings = setInterval(()=>{
+                // get data
+                const [y, x] = winner[i];
+                const cell = document.querySelector(`[data-coords="${y},${x}"]`);
+                // add class
+                cell.classList.add("cell__win");
+                // decrement counter
+                i--;
+                // stopping condition
+                if (i >= 0) return;
+                clearInterval(addMarkings);
+                resolve();
+            }, 200);
         });
     }
 }
 const gameboard = new GameboardClass();
 
-},{"./logic":"dZozM","./game":"cMznl","./cells":"fT14p","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cMznl":[function(require,module,exports) {
+},{"./logic":"dZozM","./game":"cMznl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./images":"jizV2"}],"cMznl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "game", ()=>game);
@@ -2686,13 +2735,25 @@ class GameClass {
     #playerTimer = document.querySelector(".current__player--timer");
     #playerTurnText = document.querySelector(".current__player--indicator");
     #playerTurnImage = document.querySelector(".current__player--image");
+    #playerTurnContainer = document.querySelector(".current__player");
     #dropIndicator = document.querySelector(".drop-indicator");
+    #backdrop = document.querySelector(".backdrop");
+    #player1PointDOM = document.querySelector(".score[data-player='1']");
+    #player2PointDOM = document.querySelector(".score[data-player='2']");
+    #playerWinScreen = document.querySelector(".player__winner");
     #restartBtn = document.querySelector(".btn__restart");
+    #playAgainBtn = document.querySelector(".btn__again");
+    // Player state
     #currentPlayer = 1;
-    #time = 5;
+    //Timer
+    #time = 30;
     #timer;
-    constructor(time){
-        this.#restartBtn.addEventListener("click", this.#restartGame.bind(this));
+    // Points
+    #pointPlayer1 = 0;
+    #pointPlayer2 = 0;
+    constructor(){
+        this.#restartBtn.addEventListener("click", this.#resetGame.bind(this));
+        this.#playAgainBtn.addEventListener("click", this.#restartGame.bind(this));
         // Start game after everything finishes loading.
         window.addEventListener("DOMContentLoaded", ()=>{
             this.startGame();
@@ -2708,6 +2769,12 @@ class GameClass {
         this.#setTurnIndicator();
         // Display the drop indicator
         this.#dropIndicator.classList.remove("hidden");
+        // set backdrop color to default
+        this.#backdrop.classList.remove("yellow");
+        this.#backdrop.classList.remove("red");
+        // Sets the player score
+        this.#player1PointDOM.textContent = this.#pointPlayer1;
+        this.#player2PointDOM.textContent = this.#pointPlayer2;
         // Adds the move event listener (for top indicator)
         this.#boardInput.addEventListener("mousemove", this.#moveDropIndicator.bind(this));
     }
@@ -2719,28 +2786,57 @@ class GameClass {
             this.#playerTimer.textContent = `${this.#time}S`;
             // Stop timer if it hits 0
             if (this.#time !== -1) return;
-            this.#stopTimer();
+            this.stopTimer();
             this.switchTurns();
         }, 1000);
     }
-    #stopTimer() {
+    stopTimer() {
         clearInterval(this.#timer);
     }
     #restartGame() {
+        // Resets the timer to default position
+        this.#time = 30;
         this.#playerTimer.textContent = `${this.#time}S`;
-        this.#stopTimer();
+        this.stopTimer();
+        // Initializes the game
         this.startGame();
+        // Toggle from the botto win screen to the turn screen
+        this.#playerTurnContainer.classList.remove("hidden");
+        this.#playerTurnContainer.classList.remove("disappear");
+        this.#playerWinScreen.classList.add("hidden");
+        this.#playerWinScreen.classList.remove("appear");
+        // Remove player icon animation
+        //prettier-ignore
+        document.querySelector(`.player__score[data-player="1"] > .player__icon`).classList.remove("iconAnimate");
+        //prettier-ignore
+        document.querySelector(`.player__score[data-player="2"] > .player__icon`).classList.remove("iconAnimate");
+    }
+    // Restart + Reset score
+    #resetGame() {
+        this.#pointPlayer1 = 0;
+        this.#pointPlayer2 = 0;
+        this.#restartGame();
+    }
+    // API purposes
+    restart() {
+        this.#restartGame();
     }
     switchTurns() {
         // Switch player turn
         this.#currentPlayer = this.#currentPlayer === 1 ? 2 : 1;
         // Restarts the timer
         clearInterval(this.#timer);
-        this.#time = 5;
+        this.#time = 30;
         this.#playerTimer.textContent = `${this.#time}S`;
         this.#startTimer();
         // Display the current player
         this.#setTurnIndicator();
+    }
+    addPointToPlayer(player) {
+        player === 1 ? this.#pointPlayer1++ : this.#pointPlayer2++;
+        // Sets the player score
+        this.#player1PointDOM.textContent = this.#pointPlayer1;
+        this.#player2PointDOM.textContent = this.#pointPlayer2;
     }
     #setTurnIndicator() {
         // Change text
@@ -2755,13 +2851,26 @@ class GameClass {
         const x = cell.dataset.coords.split(",")[1];
         this.#dropIndicator.style.setProperty("--x", x);
     }
+    displayWinScreen(playerWinner) {
+        // switch from turn display to win display
+        this.#playerTurnContainer.classList.add("hidden");
+        this.#playerWinScreen.classList.remove("hidden");
+        // Change the players name
+        this.#playerWinScreen.querySelector("p").textContent = `PLAYER ${playerWinner}`;
+        this.#backdrop.classList.add(playerWinner === 1 ? "red" : "yellow");
+        // Animate Player Icon Bouncing
+        const icon = document.querySelector(`.player__score[data-player="${playerWinner}"] > .player__icon`);
+        icon.classList.add("iconAnimate");
+    }
+    // Handles the fade in / out
+    //prettier-ignore
     get player() {
         return this.#currentPlayer;
     }
 }
 const game = new GameClass();
 
-},{"./gameboard":"f6lhA","../images/turn-background-red.svg":"9WewK","../images/turn-background-yellow.svg":"f2BuL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../images/marker-red.svg":"2abKV","../images/marker-yellow.svg":"4c9gt"}],"9WewK":[function(require,module,exports) {
+},{"./gameboard":"f6lhA","../images/turn-background-red.svg":"9WewK","../images/turn-background-yellow.svg":"f2BuL","../images/marker-red.svg":"2abKV","../images/marker-yellow.svg":"4c9gt","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9WewK":[function(require,module,exports) {
 module.exports = require("801f43f910993e0e").getBundleURL("1pq9E") + "turn-background-red.5baf717f.svg" + "?" + Date.now();
 
 },{"801f43f910993e0e":"lgJ39"}],"lgJ39":[function(require,module,exports) {
@@ -2808,11 +2917,11 @@ module.exports = require("4ce28751e3923d3d").getBundleURL("1pq9E") + "marker-red
 },{"4ce28751e3923d3d":"lgJ39"}],"4c9gt":[function(require,module,exports) {
 module.exports = require("414d0e33b69a62fb").getBundleURL("1pq9E") + "marker-yellow.7493b4d4.svg" + "?" + Date.now();
 
-},{"414d0e33b69a62fb":"lgJ39"}],"fT14p":[function(require,module,exports) {
+},{"414d0e33b69a62fb":"lgJ39"}],"jizV2":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "cellValue", ()=>cellValue);
-parcelHelpers.export(exports, "cell", ()=>cell);
+parcelHelpers.export(exports, "images", ()=>images);
 var _counterRedLargeSvg = require("../images/counter-red-large.svg");
 var _counterRedLargeSvgDefault = parcelHelpers.interopDefault(_counterRedLargeSvg);
 var _counterYellowLargeSvg = require("../images/counter-yellow-large.svg");
@@ -2821,9 +2930,14 @@ var _counterRedSmallSvg = require("../images/counter-red-small.svg");
 var _counterRedSmallSvgDefault = parcelHelpers.interopDefault(_counterRedSmallSvg);
 var _counterYellowSmallSvg = require("../images/counter-yellow-small.svg");
 var _counterYellowSmallSvgDefault = parcelHelpers.interopDefault(_counterYellowSmallSvg);
-// Handles the cell images (changes on certain viewports)
-class cellsClass {
+var _boardLayerWhiteLargeSvg = require("../images/board-layer-white-large.svg");
+var _boardLayerWhiteLargeSvgDefault = parcelHelpers.interopDefault(_boardLayerWhiteLargeSvg);
+var _boardLayerWhiteSmallSvg = require("../images/board-layer-white-small.svg");
+var _boardLayerWhiteSmallSvgDefault = parcelHelpers.interopDefault(_boardLayerWhiteSmallSvg);
+// Handles the images (changes on certain viewports)
+class ResponsiveClass {
     #boardContent = document.querySelector(".board__content");
+    #boardWhiteDOM = document.querySelector(".board__white");
     #currentViewport;
     constructor(){
         this.#detectViewport();
@@ -2837,15 +2951,21 @@ class cellsClass {
         // Sets the viewport on the object itself
         this.#currentViewport = viewportNow;
         // Change the cell image based on the viewport size
-        this.#changeCells();
+        this.#changeImages();
     }
-    #changeCells() {
+    #changeImages() {
+        // Change Cells
         [
             ...this.#boardContent.children
         ].forEach((cell)=>{
             const player = cell.dataset.player;
             cell.children[0].src = player === "1" ? this.redCell : this.yellowCell;
         });
+        // Change board
+        this.#boardWhiteDOM.src = this.boardWhite;
+    }
+    get boardWhite() {
+        return this.#currentViewport === "DESKTOP" ? (0, _boardLayerWhiteLargeSvgDefault.default) : (0, _boardLayerWhiteSmallSvgDefault.default);
     }
     get redCell() {
         return this.#currentViewport === "DESKTOP" ? (0, _counterRedLargeSvgDefault.default) : (0, _counterRedSmallSvgDefault.default);
@@ -2860,9 +2980,9 @@ class cellValue {
         this.coords = coords;
     }
 }
-const cell = new cellsClass();
+const images = new ResponsiveClass();
 
-},{"../images/counter-red-large.svg":"3BNS2","../images/counter-yellow-large.svg":"bRjQs","../images/counter-red-small.svg":"aN7Md","../images/counter-yellow-small.svg":"fD6QC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3BNS2":[function(require,module,exports) {
+},{"../images/counter-red-large.svg":"3BNS2","../images/counter-yellow-large.svg":"bRjQs","../images/counter-red-small.svg":"aN7Md","../images/counter-yellow-small.svg":"fD6QC","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../images/board-layer-white-large.svg":"GFDuY","../images/board-layer-white-small.svg":"lvHTR"}],"3BNS2":[function(require,module,exports) {
 module.exports = require("6078bfa173bedf30").getBundleURL("1pq9E") + "counter-red-large.d5444057.svg" + "?" + Date.now();
 
 },{"6078bfa173bedf30":"lgJ39"}],"bRjQs":[function(require,module,exports) {
@@ -2874,6 +2994,12 @@ module.exports = require("edbdd0c6a6c7651e").getBundleURL("1pq9E") + "counter-re
 },{"edbdd0c6a6c7651e":"lgJ39"}],"fD6QC":[function(require,module,exports) {
 module.exports = require("29042d7111ca51fc").getBundleURL("1pq9E") + "counter-yellow-small.472593a9.svg" + "?" + Date.now();
 
-},{"29042d7111ca51fc":"lgJ39"}]},["lWQBG","bDbGG"], "bDbGG", "parcelRequire1811")
+},{"29042d7111ca51fc":"lgJ39"}],"GFDuY":[function(require,module,exports) {
+module.exports = require("ad954f6dfdda4238").getBundleURL("1pq9E") + "board-layer-white-large.147d7a98.svg" + "?" + Date.now();
+
+},{"ad954f6dfdda4238":"lgJ39"}],"lvHTR":[function(require,module,exports) {
+module.exports = require("e3ddaa9774facd65").getBundleURL("1pq9E") + "board-layer-white-small.f9200141.svg" + "?" + Date.now();
+
+},{"e3ddaa9774facd65":"lgJ39"}]},["lWQBG","bDbGG"], "bDbGG", "parcelRequire1811")
 
 //# sourceMappingURL=index.fbb3188c.js.map
